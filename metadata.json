@@ -1,0 +1,8 @@
+{
+  "name": "Smart Editor",
+  "description": "A GPU accelerated, layer-based smart photo editor.",
+  "prompt": "Smart Editor photo editor",
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
