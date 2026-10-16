@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Editor } from './editor';
 import { emitAppEvent } from './app/app-events';
+import { installFigmaBridge } from './app/figma-bridge';
 
 export interface EditorState {
   isReady: boolean;
@@ -67,6 +68,7 @@ export const App: React.FC = () => {
 
     const editor = new Editor(container);
     editorRef.current = editor;
+    const removeFigmaBridge = installFigmaBridge(editor);
 
     // Attach to window for dev tools and tests
     (window as unknown as { photoStudio: Editor; smartEditor: Editor }).photoStudio = editor;
@@ -90,6 +92,8 @@ export const App: React.FC = () => {
           engineStatus: editor.renderer ? editor.renderer.name : 'Ready',
         }));
         syncState(editor);
+        if (window.parent !== window)
+          window.parent.postMessage({ bridge: 'photo-studio-figma', type: 'editor-ready' }, '*');
       })
       .catch((error) => {
         if (!isMounted) return;
@@ -107,6 +111,7 @@ export const App: React.FC = () => {
 
     return () => {
       isMounted = false;
+      removeFigmaBridge();
       // Cleanup if necessary
     };
   }, [syncState]);

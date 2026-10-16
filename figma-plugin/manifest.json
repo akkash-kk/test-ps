@@ -1,0 +1,12 @@
+{
+  "name": "Photo Studio",
+  "id": "0000000000000000000",
+  "api": "1.0.0",
+  "editorType": ["figma"],
+  "main": "code.js",
+  "ui": "ui.html",
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": ["test-ps-rho.vercel.app"]
+  }
+}

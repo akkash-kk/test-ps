@@ -93,6 +93,11 @@ export async function importFile(e: Editor, blob: Blob, name: string) {
   e.message('Image imported');
   return true;
 }
+export async function exportPng(e: Editor) {
+  const doc = e.doc;
+  await e.render();
+  return e.engine.png(await e.renderer.displayPixels(), doc.width, doc.height);
+}
 function cloneLayer(l: Layer): Layer {
   const copy = structuredClone(l);
   for (const item of allLayers([copy])) {
@@ -293,8 +298,7 @@ export async function performAction(e: Editor, action: string): Promise<void> {
     }
     case 'export': {
       const doc = e.doc;
-      await e.render();
-      const png = await e.engine.png(await e.renderer.displayPixels(), doc.width, doc.height);
+      const png = await exportPng(e);
       download(png, `${doc.name}.png`);
       e.message('PNG exported at full resolution');
       break;
