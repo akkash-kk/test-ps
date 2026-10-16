@@ -66,7 +66,24 @@ export const App: React.FC = () => {
     const container = containerRef.current;
     container.innerHTML = '';
 
-    const editor = new Editor(container);
+    let editor: Editor;
+    try {
+      editor = new Editor(container);
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error('Editor initialization error:', error);
+      if (window.parent !== window)
+        window.parent.postMessage(
+          { bridge: 'photo-studio-figma', type: 'editor-error', message: errorMsg },
+          '*',
+        );
+      setEditorState((prev) => ({
+        ...prev,
+        engineStatus: 'Editor initialization failed',
+        error: errorMsg,
+      }));
+      return;
+    }
     editorRef.current = editor;
     const removeFigmaBridge = installFigmaBridge(editor);
 
@@ -99,6 +116,11 @@ export const App: React.FC = () => {
         if (!isMounted) return;
         console.error('Editor start error:', error);
         const errorMsg = error instanceof Error ? error.message : String(error);
+        if (window.parent !== window)
+          window.parent.postMessage(
+            { bridge: 'photo-studio-figma', type: 'editor-error', message: errorMsg },
+            '*',
+          );
         const statusEl = editor.el('#engine-status');
         if (statusEl) statusEl.textContent = 'Graphics unavailable';
         editor.message(errorMsg);

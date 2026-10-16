@@ -35,6 +35,8 @@
       const sendButton = document.getElementById('send');
       let hasLoadedImage = false;
       let pendingAction = '';
+      let editorReady = false;
+      let startupTimer;
 
       function sendToPlugin(message) {
         parent.postMessage({ pluginMessage: message }, '*');
@@ -86,8 +88,13 @@
         const message = event.data;
         if (message?.bridge !== 'photo-studio-figma') return;
         if (message.type === 'editor-ready') {
+          editorReady = true;
+          clearTimeout(startupTimer);
           status.textContent = 'Select an image layer to get started.';
           sendToPlugin({ type: 'editor-ready' });
+        } else if (message.type === 'editor-error') {
+          clearTimeout(startupTimer);
+          status.textContent = `Editor failed to start: ${message.message || 'unknown error'}`;
         } else if (message.type === 'image-loaded') {
           hasLoadedImage = true;
           pendingAction = '';
@@ -110,6 +117,11 @@
 
       editor.addEventListener('load', () => {
         status.textContent = 'Starting editor…';
+        clearTimeout(startupTimer);
+        startupTimer = setTimeout(() => {
+          if (!editorReady)
+            status.textContent = 'Editor did not start. Check the plugin console for iframe, worker, or graphics errors.';
+        }, 20000);
       });
     </script>
   </body>
